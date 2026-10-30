@@ -17,6 +17,29 @@
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
+  <!-- ACCESS CODE GATEWAY MODAL (PRIVACY PROTECTION) -->
+  <div id="accessGateModal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl text-center border border-slate-200">
+      <div class="w-14 h-14 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center mx-auto mb-4 shadow-sm">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+      </div>
+      <h2 class="text-xl font-black text-slate-900 mb-1">Akses Tes Terbatas</h2>
+      <p class="text-xs text-slate-500 mb-6">Masukkan Token / Sandi Akses yang diberikan untuk membuka simulasi ujian ini.</p>
+
+      <div class="space-y-3 text-left mb-6">
+        <label class="block text-xs font-bold text-slate-700">Token Akses:</label>
+        <input id="accessCodeInput" type="password" placeholder="Contoh: TOEFL2024" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent font-mono" onkeydown="if(event.key==='Enter') verifyAccessCode()">
+        <p id="accessErrorMsg" class="hidden text-xs text-rose-600 font-semibold"></p>
+      </div>
+
+      <button onclick="verifyAccessCode()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl shadow transition">
+        Masuk ke Ujian
+      </button>
+    </div>
+  </div>
+
   <!-- TOP HEADER -->
   <header class="bg-slate-900 text-white px-4 py-3 sticky top-0 z-30 shadow">
     <div class="max-w-6xl mx-auto flex items-center justify-between">
@@ -421,6 +444,24 @@
       isAudioPlaying: false
     };
 
+    // DAFTAR SANDI AKSES YANG VALID (Bisa kamu ubah/tambah sesuai keinginan)
+    const VALID_ACCESS_CODES = ["TOEFL2024", "ITP-MOCK", "TES-RAHASIA"];
+
+    function verifyAccessCode() {
+      const input = document.getElementById('accessCodeInput');
+      const err = document.getElementById('accessErrorMsg');
+      const code = (input.value || '').trim();
+
+      if (VALID_ACCESS_CODES.includes(code)) {
+        document.getElementById('accessGateModal').classList.add('hidden');
+        sessionStorage.setItem('toefl_authorized', 'true');
+      } else {
+        err.textContent = "Token tidak valid! Hubungi pembuat tes untuk mendapatkan akses.";
+        err.classList.remove('hidden');
+        input.focus();
+      }
+    }
+
     // DOM ELEMENTS
     const timerDisplay = document.getElementById('timerDisplay');
     const itemCountDisplay = document.getElementById('itemCountDisplay');
@@ -444,6 +485,11 @@
     // INIT & TIMER
     // ----------------------------------------
     window.onload = function() {
+      // Cek apakah sudah pernah masukkan token di sesi ini
+      if (sessionStorage.getItem('toefl_authorized') === 'true') {
+        const gate = document.getElementById('accessGateModal');
+        if (gate) gate.classList.add('hidden');
+      }
       initAudioEvents();
       renderCurrentQuestion();
       startTimer();
