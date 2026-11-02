@@ -78,11 +78,6 @@
           Questions
         </button>
 
-        <button onclick="openAdminModal()" title="Lihat Rekap Nilai Siswa" class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-400 transition flex items-center space-x-1">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          <span class="hidden sm:inline">Data Nilai</span>
-        </button>
-
         <button onclick="finishTest()" class="px-4 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow transition">
           Finish Test
         </button>
@@ -231,7 +226,7 @@
       </div>
 
       <h2 class="text-2xl font-black text-slate-900">Test Completed!</h2>
-      <p class="text-xs text-slate-500 mb-6">Official TOEFL ITP Scaled Score Conversion</p>
+      <p id="syncStatusNotice" class="text-xs text-emerald-600 font-semibold mb-4">Nilai kamu telah berhasil disimpan.</p>
 
       <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-xl p-6 shadow-md mb-6">
         <div class="text-xs uppercase font-bold text-blue-200 tracking-wider">Total Converted Score</div>
@@ -263,64 +258,18 @@
     </div>
   </div>
 
-  <!-- ADMIN / REKAP NILAI MODAL -->
-  <div id="adminModal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-2xl flex flex-col max-h-[85vh]">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
-        <div>
-          <h3 class="font-bold text-base text-slate-900">Rekap Nilai Siswa (Database Hasil Ujian)</h3>
-          <p class="text-xs text-slate-500">Nilai tersimpan otomatis setiap siswa menyelesaikan ujian.</p>
-        </div>
-        <button onclick="closeAdminModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
-      </div>
-
-      <!-- GOOGLE FORM / SHEET INTEGRATION SETTING -->
-      <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 text-xs">
-        <div class="font-bold text-blue-900 mb-1 flex items-center space-x-1">
-          <span>🔗 Hubungkan ke Google Sheets / Webhook (Opsional):</span>
-        </div>
-        <p class="text-slate-600 mb-2">Masukkan URL Google Apps Script Web App / Webhook kamu jika ingin nilai terkirim langsung ke Spreadsheet seperti Google Form.</p>
-        <div class="flex items-center space-x-2">
-          <input id="webhookInput" type="text" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:ring-1 focus:ring-blue-600 font-mono">
-          <button onclick="saveWebhookUrl()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-lg transition">Simpan URL</button>
-        </div>
-      </div>
-
-      <!-- TABLE REKAP -->
-      <div class="flex-1 overflow-x-auto overflow-y-auto custom-scroll border border-slate-200 rounded-xl mb-4">
-        <table class="w-full text-left text-xs">
-          <thead class="bg-slate-100 text-slate-700 font-bold sticky top-0 border-b">
-            <tr>
-              <th class="p-2.5">Waktu</th>
-              <th class="p-2.5">Nama Siswa</th>
-              <th class="p-2.5">Email</th>
-              <th class="p-2.5 text-center">Listening</th>
-              <th class="p-2.5 text-center">Structure</th>
-              <th class="p-2.5 text-center">Reading</th>
-              <th class="p-2.5 text-center font-extrabold text-blue-700">Total Skor</th>
-              <th class="p-2.5 text-center">CEFR</th>
-            </tr>
-          </thead>
-          <tbody id="scoresTableBody" class="divide-y divide-slate-100 font-medium">
-            <!-- Data baris siswa -->
-          </tbody>
-        </table>
-      </div>
-
-      <div class="flex items-center justify-between pt-2">
-        <button onclick="clearAllScoresData()" class="text-xs text-rose-600 hover:underline font-semibold">
-          Hapus Semua Data
-        </button>
-        <button onclick="exportScoresToCSV()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow transition flex items-center space-x-1.5">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          <span>Download Excel (CSV)</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
   <!-- SCRIPT -->
   <script>
+    // ----------------------------------------
+    // PENGATURAN GOOGLE SHEETS & AKSES
+    // ----------------------------------------
+    // Masukkan URL Google Apps Script kamu di antara tanda kutip di bawah ini:
+    const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbwjTd0-8eEAtzgSDtYhjBk6pZVx2fS1XzDOZXzR1WaOIVzIKvVD5n1I04iRDp1xiVXA_Q/exec
+";
+
+    // DAFTAR SANDI AKSES YANG VALID
+    const VALID_ACCESS_CODES = ["TOEFL2026", "ITP-MOCK", "TES-RAHASIA"];
+
     // ----------------------------------------
     // DATABASE: 140 ITEMS (50 L, 40 S, 50 R)
     // ----------------------------------------
@@ -519,9 +468,6 @@
       isAudioPlaying: false
     };
 
-    // DAFTAR SANDI AKSES YANG VALID
-    const VALID_ACCESS_CODES = ["TOEFL2024", "ITP-MOCK", "TES-RAHASIA"];
-
     function verifyAccessCode() {
       const nameInput = document.getElementById('studentNameInput');
       const emailInput = document.getElementById('studentEmailInput');
@@ -593,7 +539,6 @@
       initAudioEvents();
       renderCurrentQuestion();
       startTimer();
-      loadWebhookUrl();
     };
 
     function startTimer() {
@@ -911,8 +856,8 @@
       document.getElementById('scoreSec3').textContent = scale3;
       document.getElementById('rawSec3').textContent = `${s3Correct}/50`;
 
-      // Simpan hasil ke Rekap Siswa & kirim ke Google Sheets jika URL tersedia
-      recordStudentScore({
+      // Kirim hasil otomatis ke Google Sheets kamu
+      autoSendToGoogleSheets({
         name: STATE.studentName || 'Peserta Tanpa Nama',
         email: STATE.studentEmail || '-',
         sec1: `${s1Correct}/50 (${scale1})`,
@@ -931,113 +876,31 @@
     }
 
     // ----------------------------------------
-    // DATABASE NILAI & GOOGLE SHEETS SYNC
+    // OTOMATIS KIRIM KE GOOGLE SHEETS
     // ----------------------------------------
-    function recordStudentScore(resultObj) {
-      // 1. Simpan di local storage admin
-      let list = [];
-      try {
-        list = JSON.parse(localStorage.getItem('toefl_students_results') || '[]');
-      } catch(e) { list = []; }
-      list.unshift(resultObj);
-      localStorage.setItem('toefl_students_results', JSON.stringify(list));
+    function autoSendToGoogleSheets(resultObj) {
+      const notice = document.getElementById('syncStatusNotice');
+      if (notice) notice.textContent = "Mengirim nilai ke database...";
 
-      // 2. Kirim otomatis ke Google Sheets / Webhook jika diset
-      const webhook = localStorage.getItem('toefl_webhook_url');
-      if (webhook) {
-        fetch(webhook, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(resultObj)
-        }).catch(err => console.log('Sync to sheets error:', err));
-      }
-    }
-
-    function openAdminModal() {
-      renderScoresTable();
-      document.getElementById('adminModal').classList.remove('hidden');
-    }
-
-    function closeAdminModal() {
-      document.getElementById('adminModal').classList.add('hidden');
-    }
-
-    function renderScoresTable() {
-      const tbody = document.getElementById('scoresTableBody');
-      tbody.innerHTML = '';
-      let list = [];
-      try {
-        list = JSON.parse(localStorage.getItem('toefl_students_results') || '[]');
-      } catch(e) { list = []; }
-
-      if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center p-6 text-slate-400">Belum ada siswa yang menyelesaikan ujian.</td></tr>`;
+      if (!GOOGLE_SHEET_URL || GOOGLE_SHEET_URL.includes("PASTE_URL_KAMU_DISINI")) {
+        console.warn("URL Google Sheets belum diatur di variabel GOOGLE_SHEET_URL.");
+        if (notice) notice.textContent = "Ujian selesai.";
         return;
       }
 
-      list.forEach(row => {
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50";
-        tr.innerHTML = `
-          <td class="p-2.5 text-slate-500 text-[11px]">${row.timestamp}</td>
-          <td class="p-2.5 font-bold text-slate-900">${row.name}</td>
-          <td class="p-2.5 text-slate-600">${row.email || row.info || '-'}</td>
-          <td class="p-2.5 text-center font-mono">${row.sec1}</td>
-          <td class="p-2.5 text-center font-mono">${row.sec2}</td>
-          <td class="p-2.5 text-center font-mono">${row.sec3}</td>
-          <td class="p-2.5 text-center font-black text-blue-600 text-sm">${row.total}</td>
-          <td class="p-2.5 text-center text-xs font-semibold text-slate-700">${row.cefr}</td>
-        `;
-        tbody.appendChild(tr);
+      fetch(GOOGLE_SHEET_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(resultObj)
+      })
+      .then(() => {
+        if (notice) notice.textContent = "✓ Nilai telah berhasil tercatat di Google Sheets.";
+      })
+      .catch(err => {
+        console.error("Gagal mengirim nilai:", err);
+        if (notice) notice.textContent = "Ujian selesai.";
       });
-    }
-
-    function clearAllScoresData() {
-      const pin = prompt("Ketik 'HAPUS' untuk mengonfirmasi penghapusan seluruh data nilai:");
-      if (pin === 'HAPUS') {
-        localStorage.removeItem('toefl_students_results');
-        renderScoresTable();
-      }
-    }
-
-    function exportScoresToCSV() {
-      let list = [];
-      try {
-        list = JSON.parse(localStorage.getItem('toefl_students_results') || '[]');
-      } catch(e) { list = []; }
-
-      if (list.length === 0) {
-        alert("Belum ada data nilai untuk didownload.");
-        return;
-      }
-
-      let csv = "Waktu,Nama Siswa,Email,Listening,Structure,Reading,Total Skor,CEFR\n";
-      list.forEach(r => {
-        csv += `"${r.timestamp}","${r.name}","${r.email || r.info || '-'}","${r.sec1}","${r.sec2}","${r.sec3}","${r.total}","${r.cefr}"\n`;
-      });
-
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", `Rekap_Nilai_TOEFL_ITP_${new Date().toISOString().slice(0,10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    function saveWebhookUrl() {
-      const val = (document.getElementById('webhookInput').value || '').trim();
-      localStorage.setItem('toefl_webhook_url', val);
-      alert(val ? "URL Google Sheets Webhook berhasil disimpan!" : "URL Webhook dikosongkan.");
-    }
-
-    function loadWebhookUrl() {
-      const input = document.getElementById('webhookInput');
-      if (input) {
-        input.value = localStorage.getItem('toefl_webhook_url') || '';
-      }
     }
   </script>
 </body>
