@@ -46,7 +46,7 @@
         <p id="accessErrorMsg" class="hidden text-xs text-rose-600 font-semibold"></p>
       </div>
 
-      <button onclick="verifyAccessCode()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl shadow transition">
+      <button type="button" onclick="verifyAccessCode()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl shadow transition">
         Mulai Mengerjakan Ujian
       </button>
     </div>
@@ -264,11 +264,10 @@
     // PENGATURAN GOOGLE SHEETS & AKSES
     // ----------------------------------------
     // Masukkan URL Google Apps Script kamu di antara tanda kutip di bawah ini:
-    const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbwjTd0-8eEAtzgSDtYhjBk6pZVx2fS1XzDOZXzR1WaOIVzIKvVD5n1I04iRDp1xiVXA_Q/exec
-";
+    const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbwjTd0-8eEAtzgSDtYhjBk6pZVx2fS1XzDOZXzR1WaOIVzIKvVD5n1I04iRDp1xiVXA_Q/exec";
 
     // DAFTAR SANDI AKSES YANG VALID
-    const VALID_ACCESS_CODES = ["TOEFL2026", "ITP-MOCK", "TES-RAHASIA"];
+    const VALID_ACCESS_CODES = ["toefl2026"];
 
     // ----------------------------------------
     // DATABASE: 140 ITEMS (50 L, 40 S, 50 R)
@@ -476,7 +475,7 @@
 
       const name = (nameInput.value || '').trim();
       const email = (emailInput.value || '').trim();
-      const code = (input.value || '').trim();
+      const code = (input.value || '').trim().toUpperCase();
 
       if (!name) {
         err.textContent = "Mohon isi Nama Lengkap terlebih dahulu!";
@@ -492,15 +491,18 @@
         return;
       }
 
-      if (VALID_ACCESS_CODES.includes(code)) {
+      const validCodesUpper = VALID_ACCESS_CODES.map(c => c.trim().toUpperCase());
+
+      if (validCodesUpper.includes(code)) {
         STATE.studentName = name;
         STATE.studentEmail = email;
         document.getElementById('accessGateModal').classList.add('hidden');
         sessionStorage.setItem('toefl_authorized', 'true');
         sessionStorage.setItem('toefl_student_name', name);
         sessionStorage.setItem('toefl_student_email', email);
+        err.classList.add('hidden');
       } else {
-        err.textContent = "Token tidak valid! Hubungi pengajar untuk mendapatkan akses.";
+        err.textContent = "Token tidak valid! Cek kembali token akses Anda.";
         err.classList.remove('hidden');
         input.focus();
       }
